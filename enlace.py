@@ -1,60 +1,67 @@
 import serial
 import base64
 
-with open("Luis-Gubert.jpg", "rb") as image_file:
-    text = base64.b64encode(image_file.read())
+#Luis-Gubert.jpg
+'''
+import base64
+from io import BytesIO
+from PIL import Image
 
+img = Image.open('test.jpg')
+im_file = BytesIO()
+img.save(im_file, format="JPEG")
+im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
+im_b64 = base64.b64encode(im_bytes)
+'''
+
+with open("teste.png", "rb") as image_file:
+    Data = base64.b64encode(image_file.read())
+
+print(len(Data))
 
 
 ser = serial.Serial('/dev/ttyS0', timeout=1)  # open serial port
 
-#text = 'Lorem Ipsum is simply dummy text of the printing' #and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
+#Data = 'Lorem Ipsum is simply dummy text of the printing' #and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
 
 packages = []
-for letter in str(text):
-    packages.append(letter)
+N = 1000
+for i in range(0, len(str(Data)), N):
+    packages.append(Data[i:i+N])
 
 i =0
-trys = 0
+tries = 0
 
 packages.append('$')
 
-response = ''
+response = b''
 
-if packages:
+if Data:
     while i < len(packages):
-        pack = ''
+        ser.write(packages[i]+b'\n')
 
-        for i in range(100):
-            pack = pack + packages[i].encode('utf-8')
+        confBytes = ser.readLine()   
 
-        ser.write(pack)
-
-        confBytes = ser.read(1)
-
-        confBytes = confBytes.decode('utf-8')
-
+        confBytes = base64.b64decode(confBytes)
     
 
         if packages[i] == confBytes:
-            i += 100
+            i += 1
             print('Pacote enviado')
             if confBytes == '$':
                 print('Transmissão concluída com sucesso!')
         else:
-            trys += 1
+            tries += 1
             print('Erro na transmissão')
 
-        if trys > 500:
+        if tries > 500:
             print('Limite de tentativas atingido! Encerrando transmissão')
             break
 else:
     while(True):
-        sBytes = ser.read(1)
-        
-        sBytes = sBytes.decode('utf-8')
-        
-        ser.write(sBytes.encode('utf-8'))
+        sBytes = ser.readLine()
+
+        ser.write(sBytes)
 
         if(sBytes == '$'):
     
@@ -62,7 +69,6 @@ else:
 
         response = response + sBytes    
 
-    print("String transferida: " + response)   
+    print("String transferida: " + response)
 
-
-
+    response_decoded = base64.b64decode(response)

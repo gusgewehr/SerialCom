@@ -49,7 +49,7 @@ if Data:
         if packages[i]+b'\n' == confBytes: # verifica se o enviado é igual a resposta, se for verdadeiro vai para o próximo pacote, caso contrario envia o mesmo pacote novamente e adicona as tentativas
             i += 1
             print(f'Pacote enviado {i}') 
-            if confBytes == b'$': # se receber $ termina a transmissão
+            if confBytes == b'$\n': # se receber $ termina a transmissão
                 print('Transmissão concluída com sucesso!')
         else:
             tries += 1
